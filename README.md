@@ -1,0 +1,1 @@
+# AI-Powerd-Adroit-Integrated-Management-Platform
