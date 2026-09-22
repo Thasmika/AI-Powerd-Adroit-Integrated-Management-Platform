@@ -6,8 +6,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/adroit-backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/adroit-frontend
+  BACKEND_IMAGE: ghcr.io/thasmika/adroit-backend
+  FRONTEND_IMAGE: ghcr.io/thasmika/adroit-frontend
 
 jobs:
   build-and-push:
