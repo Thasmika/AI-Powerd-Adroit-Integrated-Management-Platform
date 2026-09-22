@@ -35,7 +35,7 @@ export default function AssetProfilePage({ params }: { params: Promise<{ id: str
     { id: 'maintenance', label: 'Maintenance History' }
   ];
 
-  const API_BASE = 'http://localhost:8000/api/v1';
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
 
   const DOC_TYPE_LABELS: Record<number, string> = {
     1: 'Vehicle Registration',

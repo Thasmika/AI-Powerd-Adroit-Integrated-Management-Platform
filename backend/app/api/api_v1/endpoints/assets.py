@@ -65,6 +65,7 @@ def read_assets(
     return db.query(Asset).offset(skip).limit(limit).all()
 
 
+@router.post("", response_model=AssetSchema)
 @router.post("/", response_model=AssetSchema)
 def create_asset(
     *,

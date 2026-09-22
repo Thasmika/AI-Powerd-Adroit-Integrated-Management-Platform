@@ -21,7 +21,7 @@ export default function RenewModal({ assetId, docId, docType, currentNumber, onC
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE = 'http://localhost:8000/api/v1';
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

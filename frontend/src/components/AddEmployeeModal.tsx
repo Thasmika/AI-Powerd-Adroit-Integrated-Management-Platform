@@ -39,7 +39,9 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmployeeModa
       contact_number: formData.contactNumber || null,
     };
 
-    fetch('http://localhost:8000/api/v1/employees/', {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
+
+    fetch(`${API_BASE}/employees/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,7 +52,8 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmployeeModa
     .then(async (res) => {
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Failed to create employee');
+        const detail = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+        throw new Error(detail || 'Failed to create employee');
       }
       return res.json();
     })

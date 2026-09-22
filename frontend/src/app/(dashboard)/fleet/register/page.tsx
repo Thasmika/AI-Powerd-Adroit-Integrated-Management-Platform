@@ -120,7 +120,13 @@ export default function VehicleRegisterPage() {
       });
 
       if (!response.ok) {
-        const errData = await response.json();
+        let errData;
+        const text = await response.text();
+        try {
+          errData = JSON.parse(text);
+        } catch (e) {
+          throw new Error(`Server returned ${response.status}: ${text}`);
+        }
         throw new Error(errData.detail || `Failed to ${editingId ? 'update' : 'register'} vehicle`);
       }
 
