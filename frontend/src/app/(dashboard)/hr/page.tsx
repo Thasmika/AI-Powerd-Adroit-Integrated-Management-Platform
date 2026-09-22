@@ -6,13 +6,6 @@ import Link from 'next/link';
 import { AddEmployeeModal } from '@/components/AddEmployeeModal';
 import { useToast } from '@/components/Toast';
 
-const statData = [
-  { title: "Employees", value: "248", subtitle: "Active records", type: "info" },
-  { title: "Expiring ≤ 60 Days", value: "17", subtitle: "Visa / EID / Passport", type: "warning" },
-  { title: "On Leave", value: "12", subtitle: "Currently away", type: "success" },
-  { title: "Pending Actions", value: "9", subtitle: "HR follow-up", type: "danger" }
-];
-
 const upcomingExpiries = [
   { type: "Employment Visa", count: 6 },
   { type: "Emirates ID", count: 5 },
@@ -23,11 +16,55 @@ const upcomingExpiries = [
 export default function HRDashboardPage() {
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const { showToast, ToastContainer } = useToast();
+  const [stats, setStats] = useState({
+    totalEmployees: 248,
+    expiringDocs: 17,
+    onLeave: 12,
+    pendingActions: 9
+  });
+
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/dashboard/hr-stats`, {
+          headers
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleAddEmployeeSuccess = (data: any) => {
     setIsAddEmployeeModalOpen(false);
     showToast(`Employee ${data.firstName} ${data.lastName} created successfully!`, 'success');
+    
+    // Refresh stats when a new employee is added
+    const token = localStorage.getItem('access_token');
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/dashboard/hr-stats`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
+    .then(res => res.json())
+    .then(data => setStats(data))
+    .catch(console.error);
   };
+
+  const statData = [
+    { title: "Employees", value: stats.totalEmployees.toString(), subtitle: "Active records", type: "info" },
+    { title: "Expiring ≤ 60 Days", value: stats.expiringDocs.toString(), subtitle: "Visa / EID / Passport", type: "warning" },
+    { title: "On Leave", value: stats.onLeave.toString(), subtitle: "Currently away", type: "success" },
+    { title: "Pending Actions", value: stats.pendingActions.toString(), subtitle: "HR follow-up", type: "danger" }
+  ];
 
   return (
     <div className={styles.container}>
