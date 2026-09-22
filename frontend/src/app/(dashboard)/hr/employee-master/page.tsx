@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import { RecordModal } from '@/components/RecordModal';
 
 interface EmployeeData {
+  id: number;
   name: string;
   department: string;
   designation: string;
@@ -53,6 +54,106 @@ export default function EmployeeMasterPage() {
 
   const [activeTab, setActiveTab] = useState('Employment');
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleInputChange = (field: keyof EmployeeData, value: string | boolean) => {
+    if (employeeData) {
+      setEmployeeData({ ...employeeData, [field]: value });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!employeeData) return;
+    setIsSaving(true);
+    setError(null);
+    try {
+      const updatePayload = {
+        employment_status: employeeData.employmentStatus,
+        joining_date: employeeData.joiningDate && employeeData.joiningDate !== 'N/A' ? employeeData.joiningDate : null,
+        salary_category: employeeData.salaryCategory,
+        salary_transfer_status: employeeData.salaryTransferStatus === 'Active',
+        bank_name: employeeData.bankName,
+        bank_ac: employeeData.bankAc,
+        routing_no: employeeData.routingNo,
+        eid_no: employeeData.eidNo,
+        uid_no: employeeData.uidNo,
+        nationality: employeeData.nationality,
+        date_of_birth: employeeData.dob && employeeData.dob !== 'N/A' ? employeeData.dob : null,
+        company_mol_id: employeeData.companyMolId,
+        emp_mol_id: employeeData.empMolId,
+        health_card_no: employeeData.healthCardNo,
+        insurance_provider: employeeData.insuranceProvider,
+        notes: employeeData.notes
+      };
+
+      const response = await fetch(`${API_BASE}/employees/${employeeData.id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updatePayload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save employee details');
+      }
+
+      setIsEditing(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to save changes.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderActionButtons = () => (
+    <div className={styles.actionButtons}>
+      {isEditing ? (
+        <>
+          <button className={styles.btnCancel} onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</button>
+          <button className={styles.btnPrimary} onClick={handleSave} disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </>
+      ) : (
+        <button className={styles.btnPrimary} onClick={() => setIsEditing(true)}>Edit Details</button>
+      )}
+    </div>
+  );
+
+  const renderField = (label: string, field: keyof EmployeeData, isDate: boolean = false, isSelect: boolean = false, options: string[] = []) => (
+    <div className={styles.tabInfoGroup}>
+      <label>{label}</label>
+      {isEditing ? (
+        isSelect ? (
+          <select 
+            className={styles.input} 
+            value={employeeData?.[field] as string || ''}
+            onChange={(e) => handleInputChange(field, e.target.value)}
+          >
+            <option value="" disabled>Select...</option>
+            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
+        ) : (
+          <input 
+            type={isDate ? "date" : "text"} 
+            className={styles.input} 
+            value={employeeData?.[field] === 'N/A' ? '' : employeeData?.[field] as string || ''}
+            onChange={(e) => handleInputChange(field, e.target.value)}
+          />
+        )
+      ) : (
+        <span className={styles.detailValue}>
+          {field === 'employmentStatus' ? (
+            <span className={`${styles.detailValue} ${styles.statusActive}`}>
+              {employeeData?.[field] as string}
+            </span>
+          ) : (
+            employeeData?.[field] as string
+          )}
+        </span>
+      )}
+    </div>
+  );
 
   const tabs = [
     'Employment', 'Salary', 'Personal', 'Passport', 'Visa', 
@@ -89,6 +190,7 @@ export default function EmployeeMasterPage() {
         if (data && data.length > 0) {
           const emp = data[0];
           setEmployeeData({
+            id: emp.id,
             name: `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || 'N/A',
             department: emp.department_id ? `Dept ID: ${emp.department_id}` : 'N/A',
             designation: emp.designation || 'N/A',
@@ -298,82 +400,37 @@ export default function EmployeeMasterPage() {
             
             {activeTab === 'Salary' && (
               <div className={styles.tabGrid}>
-                <div className={styles.tabInfoGroup}>
-                  <label>Bank Name</label>
-                  <span className={styles.detailValue}>{employeeData.bankName}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Bank A/C</label>
-                  <span className={styles.detailValue}>{employeeData.bankAc}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Routing No</label>
-                  <span className={styles.detailValue}>{employeeData.routingNo}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Salary Category</label>
-                  <span className={styles.detailValue}>{employeeData.salaryCategory}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Transfer Status</label>
-                  <span className={styles.detailValue}>{employeeData.salaryTransferStatus}</span>
-                </div>
+                {renderField('Bank Name', 'bankName')}
+                {renderField('Bank A/C', 'bankAc')}
+                {renderField('Routing No', 'routingNo')}
+                {renderField('Salary Category', 'salaryCategory')}
+                {renderField('Transfer Status', 'salaryTransferStatus', false, true, ['Active', 'Inactive'])}
               </div>
             )}
 
             {activeTab === 'Personal' && (
               <div className={styles.tabGrid}>
-                <div className={styles.tabInfoGroup}>
-                  <label>EID No</label>
-                  <span className={styles.detailValue}>{employeeData.eidNo}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>UID No</label>
-                  <span className={styles.detailValue}>{employeeData.uidNo}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Nationality</label>
-                  <span className={styles.detailValue}>{employeeData.nationality}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Date of Birth</label>
-                  <span className={styles.detailValue}>{employeeData.dob}</span>
-                </div>
+                {renderField('EID No', 'eidNo')}
+                {renderField('UID No', 'uidNo')}
+                {renderField('Nationality', 'nationality')}
+                {renderField('Date of Birth', 'dob', true)}
               </div>
             )}
 
             {activeTab === 'LabourCard' && (
               <div className={styles.tabGrid}>
-                <div className={styles.tabInfoGroup}>
-                  <label>Company MOL ID</label>
-                  <span className={styles.detailValue}>{employeeData.companyMolId}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Emp MOL ID</label>
-                  <span className={styles.detailValue}>{employeeData.empMolId}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Health Card No</label>
-                  <span className={styles.detailValue}>{employeeData.healthCardNo}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Insurance Provider</label>
-                  <span className={styles.detailValue}>{employeeData.insuranceProvider}</span>
-                </div>
+                {renderField('Company MOL ID', 'companyMolId')}
+                {renderField('Emp MOL ID', 'empMolId')}
+                {renderField('Health Card No', 'healthCardNo')}
+                {renderField('Insurance Provider', 'insuranceProvider')}
               </div>
             )}
 
             {/* Employment is partially shown in the top panels, but we can put some extras here if needed, or leave it generic */}
             {activeTab === 'Employment' && (
               <div className={styles.tabGrid}>
-                <div className={styles.tabInfoGroup}>
-                  <label>Employment Status</label>
-                  <span className={`${styles.detailValue} ${styles.statusActive}`}>{employeeData.employmentStatus}</span>
-                </div>
-                <div className={styles.tabInfoGroup}>
-                  <label>Joining Date</label>
-                  <span className={styles.detailValue}>{employeeData.joiningDate}</span>
-                </div>
+                {renderField('Employment Status', 'employmentStatus', false, true, ['Active', 'Inactive', 'Terminated', 'On Leave'])}
+                {renderField('Joining Date', 'joiningDate', true)}
               </div>
             )}
 
@@ -405,10 +462,18 @@ export default function EmployeeMasterPage() {
               <textarea 
                 className={styles.notesTextarea} 
                 value={employeeData.notes || ''}
-                readOnly
+                readOnly={!isEditing}
+                onChange={(e) => handleInputChange('notes', e.target.value)}
                 placeholder={`Any additional notes about this employee...`}
               />
             </div>
+
+            {/* Bottom Action Buttons */}
+            {['Employment', 'Salary', 'Personal', 'LabourCard'].includes(activeTab) && (
+              <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '1.5rem' }}>
+                {renderActionButtons()}
+              </div>
+            )}
           </div>
           
           <RecordModal 

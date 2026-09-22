@@ -307,8 +307,6 @@
 .tabsContainer {
   display: flex;
   gap: 0.5rem;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
   background: rgba(15, 23, 42, 0.4);
   padding: 0.5rem;
   border-radius: 12px;
@@ -460,4 +458,55 @@
 
 .btnSecondary:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.tabActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #38bdf8, #818cf8);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(56, 189, 248, 0.4);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btnCancel {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnCancel:hover {
+  background: rgba(239, 68, 68, 0.2);
 }
